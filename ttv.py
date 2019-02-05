@@ -1,12 +1,13 @@
 PLAYLIST_LOAD_URL = "http://91.92.66.82/trash/ttv-list/ttv.all.tag.player.m3u"
-TEMPLATE_SAVE_PATH = "/opt/share/nginx/html/template.txt"
-FAVORITES_LOAD_PATH = "/opt/share/nginx/html/favorites.txt"
-PLAYLIST_SAVE_PATH = "/opt/share/nginx/html/playlist.m3u"
+TEMPLATE_SAVE_PATH = "/opt/etc/ttv/template.txt"
+FAVORITES_LOAD_PATH = "/opt/etc/ttv/favorites.txt"
+PLAYLIST_SAVE_PATH = "/opt/etc/ttv/playlist.m3u"
 LOGOS_URL = "https://raw.githubusercontent.com/AlexELEC/channel-logos/master/logos/{}.png"
 #LOGOS_URL = "{}.png"
 STREAM_URL = "http://127.0.0.1:6878/ace/getstream?id={}&.mp4"
 #STREAM_URL = "acestream://{}"
-EPG_LINKS = "https://teleguide.info/download/new3/xmltv.xml.gz,http://programtv.ru/xmltv.xml.gz,http://api.torrent-tv.ru/ttv.xmltv.xml.gz"
+EPG_LINKS = "https://teleguide.info/download/new3/xmltv.xml.gz"
+#EPG_LINKS = "https://teleguide.info/download/new3/xmltv.xml.gz,http://programtv.ru/xmltv.xml.gz,http://api.torrent-tv.ru/ttv.xmltv.xml.gz"
 
 import re
 import urllib.request
@@ -16,20 +17,20 @@ from functools import cmp_to_key
 from urllib.parse import urlencode
 
 def cmp(a, b):
-    return (a > b) - (a < b) 
+	return (a > b) - (a < b) 
 	
 def multikeysort(items, columns):
-    comparers = [
-        ((i(col[1:].strip()), -1) if col.startswith('-') else (i(col.strip()), 1))
-        for col in columns
-    ]
-    def comparer(left, right):
-        comparer_iter = (
-            cmp(fn(left), fn(right)) * mult
-            for fn, mult in comparers
-        )
-        return next((result for result in comparer_iter if result), 0)
-    return sorted(items, key=cmp_to_key(comparer))
+	comparers = [
+		((i(col[1:].strip()), -1) if col.startswith('-') else (i(col.strip()), 1))
+		for col in columns
+	]
+	def comparer(left, right):
+		comparer_iter = (
+			cmp(fn(left), fn(right)) * mult
+			for fn, mult in comparers
+		)
+		return next((result for result in comparer_iter if result), 0)
+	return sorted(items, key=cmp_to_key(comparer))
 	
 def loadChannels(content):
 	lines = content.splitlines()
@@ -186,8 +187,8 @@ if exists:
 	content = file.read()
 	favorites = loadFavorites(content)
 	savePlaylist(channels, favorites, PLAYLIST_SAVE_PATH)
-else:
-	file = open(PLAYLIST_SAVE_PATH,'w', encoding='utf-8')
-	file.write(content)
-	file.close()
+#else:
+#	file = open(PLAYLIST_SAVE_PATH,'w', encoding='utf-8')
+#	file.write(content)
+#	file.close()
 
