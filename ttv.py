@@ -2,8 +2,8 @@ PLAYLIST_LOAD_URL = "http://91.92.66.82/trash/ttv-list/ttv.all.tag.player.m3u"
 TEMPLATE_SAVE_PATH = "/opt/etc/ttv/template.txt"
 FAVORITES_LOAD_PATH = "/opt/etc/ttv/favorites.txt"
 PLAYLIST_SAVE_PATH = "/opt/etc/ttv/playlist.m3u"
-LOGOS_URL = "https://raw.githubusercontent.com/Kyrie1965/ttv/master/logos/{}.png"
-#LOGOS_URL = "{}.png"
+LOGOS_URL = "https://raw.githubusercontent.com/Kyrie1965/ttv/master/logos/{}"
+#LOGOS_URL = "{}"
 STREAM_URL = "http://127.0.0.1:6878/ace/getstream?id={}&.mp4"
 #STREAM_URL = "acestream://{}"
 EPG_LINKS = "https://teleguide.info/download/new3/xmltv.xml.gz"
@@ -93,6 +93,8 @@ def saveTemplate(content, channels, path):
 				template += "/"
 				template += channelEPG
 				template += "/"
+				template += channelName + ".png"
+				template += "/"
 				template += channelGroup
 				template += "\n"
 				waitURI = False
@@ -130,8 +132,11 @@ def loadFavorites(content):
 	lines = content.splitlines()
 	for line in lines:
 		parts = line.split('/')
-		if len(parts) == 5:
-			tmpDict = {"name": parts[0], "replace": parts[1], "newName": parts[2], "EPG": parts[3], "group": parts[4]}
+		if len(parts) == 6:
+			tmpDict = {"name": parts[0], "replace": parts[1], "newName": parts[2], "EPG": parts[3], "logo": parts[4], "group": parts[5]}
+			returnChannels[parts[0]] = tmpDict
+		elif len(parts) == 5: #совместимость с предыдущим вариантом
+			tmpDict = {"name": parts[0], "replace": parts[1], "newName": parts[2], "EPG": parts[3], "group": parts[4], "logo": parts[0] + ".png"}
 			returnChannels[parts[0]] = tmpDict
 	return returnChannels
 
@@ -149,7 +154,7 @@ def savePlaylist(channels, favorites, path):
 	for ch in currentChannels:
 		chFromFavorites = favorites.get(ch)
 		chFromChannels = channels.get(ch)
-		tmpDict = {"name": chFromFavorites.get("newName"), "oldName": chFromFavorites.get("name"), "EPG": chFromFavorites.get("EPG"), "group": chFromFavorites.get("group"), "stream": chFromChannels.get("stream"), "hd": chFromChannels.get("hd")}
+		tmpDict = {"name": chFromFavorites.get("newName"), "oldName": chFromFavorites.get("name"), "EPG": chFromFavorites.get("EPG"), "group": chFromFavorites.get("group"), "logo": chFromFavorites.get("logo"), "stream": chFromChannels.get("stream"), "hd": chFromChannels.get("hd")}
 		returnChannels.append(tmpDict)
 	result = multikeysort(returnChannels, ['group', '-hd', 'name'])
 	template=""
@@ -162,7 +167,7 @@ def savePlaylist(channels, favorites, path):
 		group = n.get("group")
 		if group.find("_", 2, 3) != -1:
 			group = group[3:]
-		template += "#EXTINF:-1 tvg-name=\"{}\" tvg-logo=\"{}\" group-title=\"{}\" ,{}".format(n.get("EPG"), LOGOS_URL.format(urllib.parse.quote(n.get("oldName"))), group, n.get("name"))
+		template += "#EXTINF:-1 tvg-name=\"{}\" tvg-logo=\"{}\" group-title=\"{}\" ,{}".format(n.get("EPG"), LOGOS_URL.format(urllib.parse.quote(n.get("logo"))), group, n.get("name"))
 		template += "\n"
 		template += STREAM_URL.format(n.get("stream"))
 		template += "\n"
@@ -187,8 +192,3 @@ if exists:
 	content = file.read()
 	favorites = loadFavorites(content)
 	savePlaylist(channels, favorites, PLAYLIST_SAVE_PATH)
-#else:
-#	file = open(PLAYLIST_SAVE_PATH,'w', encoding='utf-8')
-#	file.write(content)
-#	file.close()
-
