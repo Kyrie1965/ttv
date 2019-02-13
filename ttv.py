@@ -48,10 +48,10 @@ def loadChannels(content):
 			if waitURI:
 				channelStreamID = line[12:]
 				HD = False
-				if "HD" in channelName:
+				if ("HD" in channelName) or ("UHD" in channelName) or ("4K" in channelName):
 					HD = True
 				tmpDict = {"name": channelName, "group": channelGroup, "stream": channelStreamID, "hd": HD}
-				returnChannels[channelName] = tmpDict
+				returnChannels[channelName.upper()] = tmpDict
 				waitURI = False
 		elif line.startswith("#EXTINF"):
 			x = line.split("\",")
@@ -105,7 +105,7 @@ def saveTemplate(content, channels, path):
 			channelName = x[1]
 			channelNewName = x[1]
 			channelEPG = x[1]
-			if (channels.get(channelName + " HD") != None):
+			if (channels.get(channelName.upper() + " HD") != None):
 				channelReplace = channelName + " HD"
 			else:
 				channelReplace = "-"
@@ -134,10 +134,10 @@ def loadFavorites(content):
 		parts = line.split('/')
 		if len(parts) == 6:
 			tmpDict = {"name": parts[0], "replace": parts[1], "newName": parts[2], "EPG": parts[3], "logo": parts[4], "group": parts[5]}
-			returnChannels[parts[0]] = tmpDict
+			returnChannels[parts[0].upper()] = tmpDict
 		elif len(parts) == 5: #совместимость с предыдущим вариантом
 			tmpDict = {"name": parts[0], "replace": parts[1], "newName": parts[2], "EPG": parts[3], "group": parts[4], "logo": parts[0] + ".png"}
-			returnChannels[parts[0]] = tmpDict
+			returnChannels[parts[0].upper()] = tmpDict
 	return returnChannels
 
 def savePlaylist(channels, favorites, path):
@@ -145,15 +145,15 @@ def savePlaylist(channels, favorites, path):
 	currentChannels = set()
 	for key, chDict in favorites.items():
 		if chDict["replace"] != "-":
-			if favorites.get(chDict["replace"]) != None and channels.get(chDict["replace"]) != None:
+			if favorites.get(chDict["replace"].upper()) != None and channels.get(chDict["replace"].upper()) != None:
 				currentChannels.add(chDict["replace"])
-			elif channels.get(chDict["name"]) != None:
+			elif channels.get(chDict["name"].upper()) != None:
 				currentChannels.add(chDict["name"])
-		elif channels.get(chDict["name"]) != None:
+		elif channels.get(chDict["name"].upper()) != None:
 			currentChannels.add(chDict["name"])
 	for ch in currentChannels:
-		chFromFavorites = favorites.get(ch)
-		chFromChannels = channels.get(ch)
+		chFromFavorites = favorites.get(ch.upper())
+		chFromChannels = channels.get(ch.upper())
 		tmpDict = {"name": chFromFavorites.get("newName"), "oldName": chFromFavorites.get("name"), "EPG": chFromFavorites.get("EPG"), "group": chFromFavorites.get("group"), "logo": chFromFavorites.get("logo"), "stream": chFromChannels.get("stream"), "hd": chFromChannels.get("hd")}
 		returnChannels.append(tmpDict)
 	result = multikeysort(returnChannels, ['group', '-hd', 'name'])
