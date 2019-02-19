@@ -15,6 +15,7 @@ import os
 from operator import itemgetter as i
 from functools import cmp_to_key
 from urllib.parse import urlencode
+import gzip
 
 def cmp(a, b):
 	return (a > b) - (a < b) 
@@ -176,8 +177,18 @@ def savePlaylist(channels, favorites, path):
 	file.close()
 	return result
 	
-response = urllib.request.urlopen(PLAYLIST_LOAD_URL)
-content = response.read().decode("utf-8")
+#response = urllib.request.urlopen(PLAYLIST_LOAD_URL)
+#content = response.read().decode("utf-8")
+#channels = loadChannels(content)
+content = ""
+request = urllib.request.Request(PLAYLIST_LOAD_URL)
+request.add_header('Accept-encoding', 'gzip')
+response = urllib.request.urlopen(request)
+if response.info().get('Content-Encoding') == 'gzip':
+	gzipFile = gzip.GzipFile(fileobj=response)
+	content = gzipFile.read().decode("utf-8")
+else:
+	content = response.read().decode("utf-8")
 channels = loadChannels(content)
 
 if channels == None or (len(channels.keys()) == 0):
