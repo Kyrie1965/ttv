@@ -1,4 +1,4 @@
-PLAYLIST_LOAD_URL = "http://91.92.66.82/trash/ttv-list/ttv.all.tag.player.m3u"
+PLAYLIST_LOAD_URL = "http://91.92.66.82/trash/ttv-list/as.all.tag.player.m3u"
 TEMPLATE_SAVE_PATH = "/opt/etc/ttv/template.txt"
 FAVORITES_LOAD_PATH = "/opt/etc/ttv/favorites.txt"
 PLAYLIST_SAVE_PATH = "/opt/etc/ttv/playlist.m3u"
